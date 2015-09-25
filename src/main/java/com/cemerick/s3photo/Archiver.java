@@ -45,7 +45,7 @@ public class Archiver {
     private static String fileExtension (File f) {
         Matcher m = fileExtPattern.matcher(f.getName());
         m.find();
-        return m.group(1);
+        return m.group(1).toLowerCase();
     }
 
     public void run () throws IOException, InterruptedException {
@@ -57,7 +57,7 @@ public class Archiver {
                 File f = file.toFile();
                 if (!f.isHidden()) {
                     String type = fileExtension(f);
-                    if (type == null || !DEFAULT_FILE_TYPES.contains(type.toLowerCase())) {
+                    if (type == null || !DEFAULT_FILE_TYPES.contains(type)) {
                         System.err.printf("Unknown file type, ignoring: %s\n", f.getCanonicalPath());
                     } else {
                         media.add(f);
@@ -80,7 +80,8 @@ public class Archiver {
             exec.execute(new Runnable () {
                 public void run () {
                     try {
-                        String s3key = DigestUtils.sha1Hex(new BufferedInputStream(new FileInputStream(f))) + "." + fileExtension(f);
+                        String s3key = (DigestUtils.sha1Hex(new BufferedInputStream(new FileInputStream(f))) + "." +
+                                fileExtension(f)).toLowerCase();
                         try {
                             s3.getObjectMetadata(s3BucketName, s3key);
                             skipped.put(f, s3key);
