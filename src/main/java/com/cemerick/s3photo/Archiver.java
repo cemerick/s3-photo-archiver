@@ -58,7 +58,7 @@ public class Archiver {
                 if (!f.isHidden()) {
                     String type = fileExtension(f);
                     if (type == null || !DEFAULT_FILE_TYPES.contains(type.toLowerCase())) {
-                        System.err.printf("Unknown file type, skipping: %s", f.getCanonicalPath());
+                        System.err.printf("Unknown file type, ignoring: %s\n", f.getCanonicalPath());
                     } else {
                         media.add(f);
                     }
