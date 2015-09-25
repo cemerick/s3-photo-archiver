@@ -108,8 +108,7 @@ public class Archiver {
         exec.shutdown();
         exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 
-        System.out.printf("\n%s Archived %s, skipped %s, %s failures.\n", failed.size() > 0 ? "!ERRORS!" : "Done.",
-                completed.get(), skipped.size(), failed.size());
+        System.out.println();
         if (skipped.size() > 0) {
             System.out.println("----------------------------------");
             System.out.println("Skipped:");
@@ -122,6 +121,9 @@ public class Archiver {
             System.out.println("Failed:");
             for (File f : failed) System.out.println(f.getCanonicalPath());
         }
+
+        System.out.printf("\n%s Archived %s, skipped %s, %s failures.\n", failed.size() > 0 ? "!ERRORS!" : "Done.",
+                completed.get(), skipped.size(), failed.size());
 
         System.exit(failed.size() == 0 ? 0 : 1);
     }
