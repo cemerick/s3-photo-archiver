@@ -71,7 +71,7 @@ public class Archiver {
 
         final AmazonS3Client s3 = new AmazonS3Client(awsCreds);
 
-        ExecutorService exec = Executors.newFixedThreadPool(4);
+        ExecutorService exec = Executors.newFixedThreadPool(8);
         final AtomicInteger completed = new AtomicInteger();
         final HashMap<File, String> skipped = new HashMap<File, String>();
         final ArrayList<File> failed = new ArrayList<File>();
