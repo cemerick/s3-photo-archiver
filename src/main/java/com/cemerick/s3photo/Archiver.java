@@ -35,7 +35,7 @@ public class Archiver {
     public Archiver (AWSCredentials awsCreds, String s3BucketName, File sourceDirectory) {
         assert awsCreds != null;
         assert s3BucketName != null;
-        assert sourceDirectory != null && sourceDirectory.exists() && sourceDirectory.isDirectory();
+        assert sourceDirectory != null && sourceDirectory.exists();
 
         this.awsCreds = awsCreds;
         this.s3BucketName = s3BucketName;
@@ -144,7 +144,6 @@ public class Archiver {
         if (args.length == 0) badarg("Sole argument must be upload source directory.");
         File source = new File(args[0]);
         if (!source.exists()) badarg(String.format("%s does not exist", args[0]));
-        if (!source.isDirectory()) badarg(String.format("%s is not a directory", args[0]));
         new Archiver(new BasicAWSCredentials(findConfig("AWS_ACCESS_KEY_ID"), findConfig("AWS_SECRET_ACCESS_KEY")),
                 findConfig("AWS_S3_BUCKET"),
                 source).run();
