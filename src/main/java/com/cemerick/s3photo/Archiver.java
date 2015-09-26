@@ -23,8 +23,11 @@ import java.util.regex.Pattern;
 
 public class Archiver {
     public static final Set<String> DEFAULT_FILE_TYPES = Collections.unmodifiableSet(
-            new HashSet<String>(Arrays.asList(new String[] {"jpg", "jpeg", "png", "gif", "mp4", "mov", "avi",
-                    "mpeg"})));
+            new HashSet<String>(Arrays.asList(new String[] {
+                    // images
+                    "jpg", "jpeg", "png", "gif",
+                    // video
+                    "mp4", "mov", "avi", "mpeg", "mts"})));
 
     private static Pattern fileExtPattern = Pattern.compile("(?<=\\.)([^\\.]+)$");
 
