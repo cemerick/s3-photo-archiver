@@ -86,8 +86,15 @@ public class Archiver {
                         String s3key = (DigestUtils.sha1Hex(new BufferedInputStream(new FileInputStream(f))) + "." +
                                 fileExtension(f)).toLowerCase();
                         try {
-                            s3.getObjectMetadata(s3BucketName, s3key);
-                            skipped.put(f, s3key);
+                            ObjectMetadata om = s3.getObjectMetadata(s3BucketName, s3key);
+                            if (om.getContentLength() != f.length()) {
+                                // odds of a hash collision where the files are of different lengths?
+                                System.err.printf("[ERROR] likely hash collision found, %s (%s) -> %s (%s)\n",
+                                        f.getAbsolutePath(), f.length(), s3key, om.getContentLength());
+                                failed.add(f);
+                            } else {
+                                skipped.put(f, s3key);
+                            }
                         } catch (AmazonS3Exception e) {
                             if (e.getStatusCode() == 404) {
                                 s3.putObject(new PutObjectRequest(s3BucketName, s3key, f)
