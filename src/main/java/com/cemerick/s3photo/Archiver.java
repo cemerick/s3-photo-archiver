@@ -25,7 +25,7 @@ public class Archiver {
     public static final Set<String> DEFAULT_FILE_TYPES = Collections.unmodifiableSet(
             new HashSet<String>(Arrays.asList(new String[] {
                     // images
-                    "jpg", "jpeg", "png", "gif",
+                    "jpg", "jpeg", "png", "gif", "bmp", "tiff",
                     // video
                     "mp4", "mov", "avi", "mpeg", "mts"})));
 
