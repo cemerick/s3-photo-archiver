@@ -47,8 +47,7 @@ public class Archiver {
 
     private static String fileExtension (File f) {
         Matcher m = fileExtPattern.matcher(f.getName());
-        m.find();
-        return m.group(1).toLowerCase();
+        return m.find() ? m.group(1).toLowerCase() : null;
     }
 
     public void run () throws IOException, InterruptedException {
