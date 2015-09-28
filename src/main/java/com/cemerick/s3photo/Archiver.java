@@ -1,6 +1,5 @@
 package com.cemerick.s3photo;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -13,8 +12,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,16 +30,18 @@ public class Archiver {
 
     private final AWSCredentials awsCreds;
     private final String s3BucketName;
-    private final File sourceDirectory;
+    private final File[] sources;
 
-    public Archiver (AWSCredentials awsCreds, String s3BucketName, File sourceDirectory) {
+    public Archiver (AWSCredentials awsCreds, String s3BucketName, File... sources) {
         assert awsCreds != null;
         assert s3BucketName != null;
-        assert sourceDirectory != null && sourceDirectory.exists();
+        assert sources.length > 0;
+
+        for (File f : sources) assert f.exists();
 
         this.awsCreds = awsCreds;
         this.s3BucketName = s3BucketName;
-        this.sourceDirectory = sourceDirectory;
+        this.sources = sources;
     }
 
     private static String fileExtension (File f) {
@@ -53,21 +52,23 @@ public class Archiver {
     public void run () throws IOException, InterruptedException {
         final ArrayList<File> media = new ArrayList<File>();
 
-        Files.walkFileTree(sourceDirectory.toPath(), new SimpleFileVisitor<Path>() {
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException {
-                File f = file.toFile();
-                if (!f.isHidden()) {
-                    String type = fileExtension(f);
-                    if (type == null || !DEFAULT_FILE_TYPES.contains(type)) {
-                        System.err.printf("Unknown file type, ignoring: %s\n", f.getCanonicalPath());
-                    } else {
-                        media.add(f);
+        for (File source : sources) {
+            Files.walkFileTree(source.toPath(), new SimpleFileVisitor<Path>() {
+                public FileVisitResult visitFile (Path file, BasicFileAttributes attrs)
+                        throws IOException {
+                    File f = file.toFile();
+                    if (!f.isHidden()) {
+                        String type = fileExtension(f);
+                        if (type == null || !DEFAULT_FILE_TYPES.contains(type)) {
+                            System.err.printf("Unknown file type, ignoring: %s\n", f.getCanonicalPath());
+                        } else {
+                            media.add(f);
+                        }
                     }
+                    return FileVisitResult.CONTINUE;
                 }
-                return FileVisitResult.CONTINUE;
-            }
-        });
+            });
+        }
 
         System.out.printf("Archiving %s files to s3://%s\n", media.size(), s3BucketName);
 
@@ -150,11 +151,14 @@ public class Archiver {
     }
 
     public static void main (String[] args) throws Throwable {
-        if (args.length == 0) badarg("Sole argument must be upload source directory.");
-        File source = new File(args[0]);
-        if (!source.exists()) badarg(String.format("%s does not exist", args[0]));
+        if (args.length == 0) badarg("Arguments must be upload sources.");
+        File[] sources = new File[args.length];
+        for (int i = 0; i < args.length; i++) {
+            sources[i] = new File(args[i]);
+            if (!sources[i].exists()) badarg(String.format("%s does not exist", args[i]));
+        }
         new Archiver(new BasicAWSCredentials(findConfig("AWS_ACCESS_KEY_ID"), findConfig("AWS_SECRET_ACCESS_KEY")),
                 findConfig("AWS_S3_BUCKET"),
-                source).run();
+                sources).run();
     }
 }
